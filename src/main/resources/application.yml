@@ -1,0 +1,43 @@
+spring:
+  application:
+    name: mcp
+  profiles:
+    active: local_postgres  # Change to PostgreSQL mode
+  main:
+    allow-bean-definition-overriding: true
+
+server:
+  port: 8080
+
+logging:
+  level:
+    org.yechan.mcp: DEBUG
+    org.jetbrains.exposed: DEBUG
+    org.springframework.jdbc: DEBUG
+
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+  autoconfigure:
+    exclude: 
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+      - org.jetbrains.exposed.spring.autoconfigure.ExposedAutoConfiguration
+  
+url-shortener:
+  storage-type: in-memory
+
+---
+spring:
+  config:
+    activate:
+      on-profile: local_postgres
+  datasource:
+    url: jdbc:postgresql://localhost:5432/urlshortener
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+
+url-shortener:
+  storage-type: postgres
