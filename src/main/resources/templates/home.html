@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL 단축 서비스</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-color: #f4f5f7;
+            --card-bg: #ffffff;
+            --primary-color: #0052cc;
+            --secondary-color: #172b4d;
+            --text-color: #172b4d;
+            --text-secondary: #6b778c;
+            --border-color: #dfe1e6;
+            --success-color: #36b37e;
+            --hover-color: #0065ff;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+        }
+        
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 640px;
+        }
+        
+        .app-title {
+            font-size: 24px;
+            font-weight: 500;
+            margin-bottom: 20px;
+            color: var(--secondary-color);
+            display: flex;
+            align-items: center;
+        }
+        
+        .app-title i {
+            color: var(--primary-color);
+            margin-right: 10px;
+        }
+        
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 3px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+        
+        .card-title {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: var(--secondary-color);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-color);
+        }
+        
+        input[type="url"] {
+            width: 100%;
+            padding: 8px 12px;
+            border: 2px solid var(--border-color);
+            border-radius: 3px;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        input[type="url"]:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(0, 82, 204, 0.2);
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 3px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .btn:hover {
+            background-color: var(--hover-color);
+        }
+        
+        .btn-secondary {
+            background-color: rgba(9, 30, 66, 0.04);
+            color: var(--text-color);
+        }
+        
+        .btn-secondary:hover {
+            background-color: rgba(9, 30, 66, 0.08);
+        }
+        
+        .btn-success {
+            background-color: var(--success-color);
+        }
+        
+        .btn-success:hover {
+            background-color: #2ea06e;
+        }
+        
+        .btn-block {
+            display: block;
+            width: 100%;
+        }
+        
+        .icon-button {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 14px;
+            padding: 4px 8px;
+        }
+        
+        .icon-button:hover {
+            color: var(--primary-color);
+        }
+        
+        .result {
+            display: none;
+            margin-top: 20px;
+        }
+        
+        .result-title {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: var(--text-color);
+        }
+        
+        .shortened-url {
+            padding: 12px;
+            background-color: rgba(9, 30, 66, 0.04);
+            border-radius: 3px;
+            word-break: break-all;
+            margin-bottom: 12px;
+            font-family: monospace;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .shortened-url-text {
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+        
+        .admin-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        
+        .admin-link:hover {
+            color: var(--primary-color);
+            text-decoration: underline;
+        }
+        
+        .footer-info {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        
+        .copy-notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-size: 14px;
+            display: none;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 반응형 스타일 */
+        @media (max-width: 576px) {
+            .container {
+                padding: 0 10px;
+            }
+            
+            .card {
+                padding: 16px;
+            }
+        }
+        
+        /* 로딩 스피너 */
+        .spinner {
+            width: 18px;
+            height: 18px;
+            border: 3px solid rgba(0, 0, 0, 0.1);
+            border-top-color: var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s ease-in-out infinite;
+            display: none;
+            margin-left: 10px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="app-title"><i class="fas fa-link"></i> URL 단축 서비스</h1>
+        
+        <div class="card">
+            <h2 class="card-title">새 URL 단축하기</h2>
+            
+            <div class="form-group">
+                <label for="originalUrl">단축할 URL</label>
+                <input type="url" id="originalUrl" placeholder="https://example.com/your/long/url" required>
+            </div>
+            
+            <button id="shortenBtn" class="btn btn-block">
+                <span>URL 단축하기</span>
+                <span class="spinner" id="loadingSpinner"></span>
+            </button>
+            
+            <div id="result" class="result">
+                <h3 class="result-title">단축된 URL</h3>
+                <div class="shortened-url">
+                    <span id="shortenedUrl" class="shortened-url-text"></span>
+                    <button id="copyBtn" class="icon-button">
+                        <i class="far fa-copy"></i>
+                    </button>
+                </div>
+                <button id="newUrlBtn" class="btn btn-secondary btn-block">새 URL 단축하기</button>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <a href="/admin" class="admin-link"><i class="fas fa-cog"></i> 관리자 페이지</a>
+            <div class="footer-info">&copy; 2025 URL 단축 서비스</div>
+        </div>
+    </div>
+    
+    <div id="copyNotification" class="copy-notification">
+        <i class="fas fa-check"></i> 클립보드에 복사되었습니다
+    </div>
+    
+    <script>
+        const shortenBtn = document.getElementById('shortenBtn');
+        const copyBtn = document.getElementById('copyBtn');
+        const newUrlBtn = document.getElementById('newUrlBtn');
+        const originalUrlInput = document.getElementById('originalUrl');
+        const shortenedUrlElement = document.getElementById('shortenedUrl');
+        const resultElement = document.getElementById('result');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const copyNotification = document.getElementById('copyNotification');
+        
+        shortenBtn.addEventListener('click', async () => {
+            const originalUrl = originalUrlInput.value.trim();
+            
+            if (!originalUrl) {
+                alert('URL을 입력해주세요.');
+                return;
+            }
+            
+            if (!isValidUrl(originalUrl)) {
+                alert('유효한 URL을 입력해주세요. (예: https://example.com)');
+                return;
+            }
+            
+            // 로딩 표시
+            shortenBtn.disabled = true;
+            loadingSpinner.style.display = 'inline-block';
+            
+            try {
+                const response = await fetch('/api/shorten', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ url: originalUrl })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('URL 단축에 실패했습니다.');
+                }
+                
+                const data = await response.json();
+                shortenedUrlElement.textContent = data.shortenedUrl;
+                resultElement.style.display = 'block';
+                shortenBtn.style.display = 'none';
+            } catch (error) {
+                alert(error.message);
+            } finally {
+                // 로딩 표시 제거
+                shortenBtn.disabled = false;
+                loadingSpinner.style.display = 'none';
+            }
+        });
+        
+        copyBtn.addEventListener('click', () => {
+            const shortenedUrl = shortenedUrlElement.textContent;
+            navigator.clipboard.writeText(shortenedUrl)
+                .then(() => {
+                    // 복사 완료 알림 표시
+                    copyNotification.style.display = 'block';
+                    setTimeout(() => {
+                        copyNotification.style.display = 'none';
+                    }, 2000);
+                })
+                .catch(err => {
+                    alert('클립보드 복사에 실패했습니다: ' + err);
+                });
+        });
+        
+        newUrlBtn.addEventListener('click', () => {
+            originalUrlInput.value = '';
+            resultElement.style.display = 'none';
+            shortenBtn.style.display = 'block';
+            originalUrlInput.focus();
+        });
+        
+        // URL 유효성 검사 함수
+        function isValidUrl(string) {
+            try {
+                new URL(string);
+                return true;
+            } catch (_) {
+                return false;
+            }
+        }
+        
+        // 페이지 로드 시 URL 입력 필드에 포커스
+        window.addEventListener('load', () => {
+            originalUrlInput.focus();
+        });
+    </script>
+</body>
+</html>

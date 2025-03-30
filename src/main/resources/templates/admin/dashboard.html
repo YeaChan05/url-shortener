@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관리자 대시보드 - URL 단축 서비스</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-color: #f4f5f7;
+            --card-bg: #ffffff;
+            --primary-color: #0052cc;
+            --secondary-color: #172b4d;
+            --text-color: #172b4d;
+            --text-secondary: #6b778c;
+            --border-color: #dfe1e6;
+            --hover-bg: rgba(9, 30, 66, 0.04);
+            --danger-color: #de350b;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+        }
+        
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        
+        .app-title {
+            font-size: 24px;
+            font-weight: 500;
+            color: var(--secondary-color);
+            display: flex;
+            align-items: center;
+        }
+        
+        .app-title i {
+            color: var(--primary-color);
+            margin-right: 10px;
+        }
+        
+        .back-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .back-link i {
+            margin-right: 6px;
+        }
+        
+        .back-link:hover {
+            color: var(--primary-color);
+            text-decoration: underline;
+        }
+        
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 3px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+        
+        .card-title {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: var(--secondary-color);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .stat-card {
+            background-color: var(--card-bg);
+            border-radius: 3px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+            padding: 16px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: 500;
+            color: var(--primary-color);
+            margin-bottom: 8px;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th {
+            text-align: left;
+            padding: 12px 16px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            border-bottom: 2px solid var(--border-color);
+        }
+        
+        td {
+            padding: 12px 16px;
+            font-size: 14px;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+        }
+        
+        tr:hover td {
+            background-color: var(--hover-bg);
+        }
+        
+        .short-key {
+            font-family: monospace;
+            font-weight: 500;
+            color: var(--primary-color);
+        }
+        
+        .url-cell {
+            max-width: 400px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .created-at {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+        
+        .actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+        
+        .btn-icon {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 16px;
+            width: 32px;
+            height: 32px;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        
+        .btn-icon:hover {
+            background-color: var(--hover-bg);
+            color: var(--primary-color);
+        }
+        
+        .btn-icon.btn-danger:hover {
+            color: var(--danger-color);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 48px 0;
+            color: var(--text-secondary);
+        }
+        
+        .empty-state i {
+            font-size: 48px;
+            color: var(--border-color);
+            margin-bottom: 16px;
+        }
+        
+        .empty-state-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        
+        .empty-state-desc {
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 3px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            text-decoration: none;
+        }
+        
+        .btn:hover {
+            background-color: #0065ff;
+        }
+        
+        .footer {
+            font-size: 13px;
+            color: var(--text-secondary);
+            text-align: center;
+            margin-top: 32px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        /* 반응형 스타일 */
+        @media (max-width: 768px) {
+            .stats-container {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+            
+            .url-cell {
+                max-width: 200px;
+            }
+            
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+            
+            .card {
+                padding: 16px;
+            }
+            
+            .created-at {
+                display: none;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            th:nth-child(3), td:nth-child(3) {
+                display: none;
+            }
+            
+            .card-title {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+        }
+        
+        /* 삭제 확인 모달 */
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(9, 30, 66, 0.54);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+        
+        .modal-backdrop.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal {
+            background-color: var(--card-bg);
+            border-radius: 3px;
+            box-shadow: 0 3px 5px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 400px;
+            padding: 24px;
+            transform: translateY(-20px);
+            transition: transform 0.3s;
+        }
+        
+        .modal-backdrop.active .modal {
+            transform: translateY(0);
+        }
+        
+        .modal-header {
+            margin-bottom: 16px;
+        }
+        
+        .modal-title {
+            font-size: 18px;
+            font-weight: 500;
+        }
+        
+        .modal-body {
+            margin-bottom: 24px;
+        }
+        
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        .btn-secondary {
+            background-color: rgba(9, 30, 66, 0.04);
+            color: var(--text-color);
+        }
+        
+        .btn-secondary:hover {
+            background-color: rgba(9, 30, 66, 0.08);
+        }
+        
+        .btn-danger {
+            background-color: var(--danger-color);
+        }
+        
+        .btn-danger:hover {
+            background-color: #bc2e0d;
+        }
+        
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 4px;
+            font-size: 14px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease-out;
+            z-index: 1001;
+        }
+        
+        .notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .notification i {
+            margin-right: 8px;
+        }
+        
+        .notification.error {
+            background-color: var(--danger-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="app-title"><i class="fas fa-link"></i> URL 단축 서비스 관리자</h1>
+            <a href="/" class="back-link"><i class="fas fa-chevron-left"></i> 홈으로 돌아가기</a>
+        </div>
+        
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-value" th:text="${urlMappings.size()}">0</div>
+                <div class="stat-label">전체 URL</div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-title">
+                <span>단축 URL 목록</span>
+            </div>
+            
+            <div th:if="${urlMappings.isEmpty()}" class="empty-state">
+                <i class="far fa-folder-open"></i>
+                <h3 class="empty-state-title">등록된 URL이 없습니다</h3>
+                <p class="empty-state-desc">홈 페이지에서 URL을 단축해보세요.</p>
+                <a href="/" class="btn">URL 단축하기</a>
+            </div>
+            
+            <table th:if="${!urlMappings.isEmpty()}">
+                <thead>
+                    <tr>
+                        <th width="40">#</th>
+                        <th width="120">단축 키</th>
+                        <th>원본 URL</th>
+                        <th width="180">생성일</th>
+                        <th width="100">관리</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="mapping, stat : ${urlMappings}">
+                        <td th:text="${stat.count}">1</td>
+                        <td class="short-key" th:text="${mapping.shortKey}">abC12d</td>
+                        <td class="url-cell" th:text="${mapping.originalUrl}">https://example.com/long/url</td>
+                        <td class="created-at" th:text="${mapping.formattedCreatedAt}">2025-03-30 12:34:56</td>
+                        <td>
+                            <div class="actions">
+                                <button class="btn-icon copy-btn" th:data-url="${mapping.originalUrl}" title="원본 URL 복사">
+                                    <i class="far fa-copy"></i>
+                                </button>
+                                <a class="btn-icon" th:href="@{'/api/shorten/' + ${mapping.shortKey}}" target="_blank" title="방문">
+                                    <i class="fas fa-external-link-alt"></i>
+                                </a>
+                                <button class="btn-icon btn-danger delete-btn" th:data-key="${mapping.shortKey}" title="삭제">
+                                    <i class="far fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="footer">
+            &copy; 2025 URL 단축 서비스 관리자
+        </div>
+    </div>
+    
+    <!-- 삭제 확인 모달 -->
+    <div class="modal-backdrop" id="deleteModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">단축 URL 삭제</h3>
+            </div>
+            <div class="modal-body">
+                <p>이 단축 URL을 삭제하시겠습니까?</p>
+                <p>삭제 후에는 복구할 수 없습니다.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelDelete">취소</button>
+                <button class="btn btn-danger" id="confirmDelete">삭제</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 알림 -->
+    <div class="notification" id="notification">
+        <i class="fas fa-check-circle"></i>
+        <span id="notificationText">작업이 완료되었습니다</span>
+    </div>
+    
+    <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            const deleteModal = document.getElementById('deleteModal');
+            const cancelDelete = document.getElementById('cancelDelete');
+            const confirmDelete = document.getElementById('confirmDelete');
+            const notification = document.getElementById('notification');
+            const notificationText = document.getElementById('notificationText');
+            const copyButtons = document.querySelectorAll('.copy-btn');
+            const deleteButtons = document.querySelectorAll('.delete-btn');
+            
+            let currentShortKey = null;
+            
+            // 삭제 버튼 클릭
+            deleteButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    currentShortKey = this.getAttribute('data-key');
+                    deleteModal.classList.add('active');
+                });
+            });
+            
+            // 모달 바깥 클릭시 닫기
+            deleteModal.addEventListener('click', function(e) {
+                if (e.target === deleteModal) {
+                    deleteModal.classList.remove('active');
+                    currentShortKey = null;
+                }
+            });
+            
+            // 삭제 취소
+            cancelDelete.addEventListener('click', function() {
+                deleteModal.classList.remove('active');
+                currentShortKey = null;
+            });
+            
+            // 삭제 확인
+            confirmDelete.addEventListener('click', async function() {
+                if (!currentShortKey) return;
+                
+                try {
+                    const response = await fetch(`/api/shorten/${currentShortKey}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    deleteModal.classList.remove('active');
+                    
+                    if (response.ok) {
+                        // 삭제 성공
+                        showNotification('URL이 성공적으로 삭제되었습니다');
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
+                    } else {
+                        showNotification('URL 삭제에 실패했습니다', 'error');
+                    }
+                } catch (error) {
+                    deleteModal.classList.remove('active');
+                    showNotification('URL 삭제 중 오류가 발생했습니다', 'error');
+                }
+            });
+            
+            // URL 복사 기능
+            copyButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const url = this.getAttribute('data-url');
+                    navigator.clipboard.writeText(url)
+                        .then(() => {
+                            showNotification('원본 URL이 클립보드에 복사되었습니다');
+                        })
+                        .catch(() => {
+                            showNotification('URL 복사에 실패했습니다', 'error');
+                        });
+                });
+            });
+            
+            // 알림 표시 함수
+            function showNotification(message, type = 'success') {
+                notificationText.textContent = message;
+                notification.className = 'notification';
+                
+                if (type === 'error') {
+                    notification.classList.add('error');
+                }
+                
+                notification.classList.add('show');
+                
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
+            }
+        });
+    </script>
+</body>
+</html>
